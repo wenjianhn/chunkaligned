@@ -144,7 +144,7 @@ func (c *chunkReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 func NewChunkAlignedReaderAt(r SizeReaderAt, chunkSize int) (SizeReaderAt, error) {
 	if chunkSize > chunkSizeLimit {
 		// NOTE(wenjianhn): Do you really need a chunk that is such large?
-		return &multi{}, errors.New("chunkaligned: chunk Size Limit Exceeded")
+		return &multi{}, errors.New("chunkaligned: chunk size limit exceeded")
 	}
 
 	totalSize := r.Size()

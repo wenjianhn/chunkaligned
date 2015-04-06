@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -75,8 +76,15 @@ func TestIntergration(t *testing.T) {
 	}
 }
 
-// TODO(wenjianhn):
-// func TestChunkSizeLimitExceeded(t *testing.T) {
+func TestChunkSizeLimitExceeded(t *testing.T) {
+	s := "very large buffer"
+	r := io.NewSectionReader(strings.NewReader(s), 0, int64(len(s)))
+
+	_, err := NewChunkAlignedReaderAt(r, chunkSizeLimit+1)
+	if err.Error() != "chunkaligned: chunk size limit exceeded" {
+		t.Errorf("Limitting chunkSize didn't work properly")
+	}
+}
 
 type fileGetter struct {
 	size int64
