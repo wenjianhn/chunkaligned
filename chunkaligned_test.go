@@ -5,6 +5,9 @@
 package chunkaligned
 
 import (
+	"fmt"
+	"io"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"reflect"
@@ -42,42 +45,85 @@ func newFileGetter(path string) (fileGetter, error) {
 	return fileGetter{fs.Size(), file}, nil
 }
 
-func TestNewChunkAlignedReaderAt(t *testing.T) {
-	path := "/tmp/bin"
-
-	fg, err := newFileGetter(path)
-	defer fg.Close()
+func sizeTempFile(size int64) (f *os.File, err error) {
+	tf, err := ioutil.TempFile("", "_chunkaligned_")
 	if err != nil {
-		t.Fatal(err)
+		err = fmt.Errorf("TempFile: %v", err)
+		return
 	}
 
-	for i := 0; i < 3; i++ {
-		chunkSize := 512 * 1024 * (2 << uint(i))
+	rf, err := os.Open("/dev/urandom")
+	if err != nil {
+		err = fmt.Errorf("Open /dev/urandom: %v", err)
+		return
+	}
+	defer rf.Close()
+
+	_, err = io.CopyN(tf, rf, size)
+	if err != nil {
+		err = fmt.Errorf("Failed to write content: %v", err)
+		return
+	}
+
+	return tf, nil
+}
+
+func TestIntergration(t *testing.T) {
+	tf, err := sizeTempFile(1 * 1024 * 1024)
+	if err != nil {
+		t.Errorf("sizeTempFile: %v", err)
+		return
+	}
+	defer os.Remove(tf.Name())
+	defer tf.Close()
+
+	fg, err := newFileGetter(tf.Name())
+	if err != nil {
+		t.Errorf("newFileGetter: %v", err)
+		return
+	}
+	defer fg.Close()
+
+	// testing with different combinations of chunkSize, bufSize and offset
+	for i := 0; i < 6; i++ {
+		chunkSize := 32 * 1024 * (1 << uint(i))
 		for j := 0; j < 4; j++ {
-			bufSize := 32 * 1024 * (2 << uint(j))
+			bufSize := 32 * 1024 * (1 << uint(j))
 			for k := 0; k < 100; k++ {
 				offset := rand.Int63n(fg.Size())
+
+				t.Logf("chunkSize: %d, bufSize: %d, offset: %d",
+					chunkSize, bufSize, offset)
+
 				cara, err := NewChunkAlignedReaderAt(&fg, chunkSize)
 				if err != nil {
-					t.Fatal(err)
+					t.Errorf("NewChunkAlignedReaderAt: %v", err)
+					return
 				}
 
-				bufActual := make([]byte, bufSize)
-				cara.ReadAt(bufActual, offset)
+				wantN := bufSize
+				if fg.Size()-offset < int64(bufSize) {
+					wantN = int(fg.Size() - offset)
+				}
 
-				file, err := os.Open(path)
+				bufActual := make([]byte, wantN)
+				_, err = cara.ReadAt(bufActual, offset)
 				if err != nil {
-					t.Fatal(err)
+					t.Errorf("cara.ReadAt: %v", err)
+					return
 				}
-				bufExpected := make([]byte, bufSize)
-				file.ReadAt(bufExpected, offset)
-				file.Close()
+
+				bufExpected := make([]byte, wantN)
+				_, err = tf.ReadAt(bufExpected, offset)
+				if err != nil {
+					t.Errorf("tf.ReadAt: %v", err)
+					return
+				}
 
 				if !reflect.DeepEqual(bufActual, bufExpected) {
-					t.Fatal("bufActual not equal to bufExpected")
+					t.Errorf("ReadAt did not work properly")
+					return
 				}
-				bufActual = nil
-				bufExpected = nil
 			}
 		}
 	}
