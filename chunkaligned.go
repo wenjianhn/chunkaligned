@@ -5,11 +5,11 @@
 package chunkaligned
 
 import (
+	"errors"
 	"io"
 	"math"
 	"sort"
 	"sync"
-	"errors"
 )
 
 // An io.SectionReader implements SizeReaderAt.
@@ -82,10 +82,10 @@ var fixedBytePool = sync.Pool{
 }
 
 type chunkReaderAt struct {
-	size    int
-	base    int64
-	cache   []byte
-	r       SizeReaderAt
+	size  int
+	base  int64
+	cache []byte
+	r     SizeReaderAt
 }
 
 func (c *chunkReaderAt) Size() int64 {
@@ -164,9 +164,9 @@ func NewChunkAlignedReaderAt(r SizeReaderAt, chunkSize int) (SizeReaderAt, error
 			partSize = int(left)
 		}
 		f := &chunkReaderAt{
-			size:    partSize,
-			cache:   nil,
-			r:       r,
+			size:  partSize,
+			cache: nil,
+			r:     r,
 		}
 		m.parts[i] = offsetAndSource{offset,
 			io.NewSectionReader(f, offset, f.Size())}
