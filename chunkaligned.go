@@ -109,12 +109,12 @@ func (c *chunkReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 
 					// We always know when EOF is coming.
 					// If the caller asked for a chunk, there should be a chunk.
-					return -1, io.ErrUnexpectedEOF
+					return 0, io.ErrUnexpectedEOF
 				}
 			} else {
 				fixedBytePool.Put(c.cache)
 				c.cache = nil
-				return -1, err
+				return 0, err
 			}
 		}
 	}
