@@ -155,7 +155,7 @@ func NewChunkAlignedReaderAt(r SizeReaderAt, chunkSize int) (SizeReaderAt, error
 		size:  totalSize,
 	}
 
-	left := totalSize
+	left := m.Size()
 	var offset int64
 	for i, _ := range m.parts {
 		partSize := chunkSize
