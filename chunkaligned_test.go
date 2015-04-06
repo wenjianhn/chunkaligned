@@ -14,60 +14,6 @@ import (
 	"testing"
 )
 
-type fileGetter struct {
-	size int64
-	file *os.File
-}
-
-func (fg *fileGetter) Size() int64 {
-	return fg.size
-}
-
-func (fg *fileGetter) ReadAt(p []byte, off int64) (n int, err error) {
-	return fg.file.ReadAt(p, off)
-}
-
-func (fg *fileGetter) Close() error {
-	return fg.file.Close()
-}
-
-func newFileGetter(path string) (fileGetter, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return fileGetter{}, err
-	}
-
-	fs, err := file.Stat()
-	if err != nil {
-		return fileGetter{}, err
-	}
-
-	return fileGetter{fs.Size(), file}, nil
-}
-
-func sizeTempFile(size int64) (f *os.File, err error) {
-	tf, err := ioutil.TempFile("", "_chunkaligned_")
-	if err != nil {
-		err = fmt.Errorf("TempFile: %v", err)
-		return
-	}
-
-	rf, err := os.Open("/dev/urandom")
-	if err != nil {
-		err = fmt.Errorf("Open /dev/urandom: %v", err)
-		return
-	}
-	defer rf.Close()
-
-	_, err = io.CopyN(tf, rf, size)
-	if err != nil {
-		err = fmt.Errorf("Failed to write content: %v", err)
-		return
-	}
-
-	return tf, nil
-}
-
 func TestIntergration(t *testing.T) {
 	tf, err := sizeTempFile(1 * 1024 * 1024)
 	if err != nil {
@@ -131,3 +77,57 @@ func TestIntergration(t *testing.T) {
 
 // TODO(wenjianhn):
 // func TestChunkSizeLimitExceeded(t *testing.T) {
+
+type fileGetter struct {
+	size int64
+	file *os.File
+}
+
+func (fg *fileGetter) Size() int64 {
+	return fg.size
+}
+
+func (fg *fileGetter) ReadAt(p []byte, off int64) (n int, err error) {
+	return fg.file.ReadAt(p, off)
+}
+
+func (fg *fileGetter) Close() error {
+	return fg.file.Close()
+}
+
+func newFileGetter(path string) (fileGetter, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return fileGetter{}, err
+	}
+
+	fs, err := file.Stat()
+	if err != nil {
+		return fileGetter{}, err
+	}
+
+	return fileGetter{fs.Size(), file}, nil
+}
+
+func sizeTempFile(size int64) (f *os.File, err error) {
+	tf, err := ioutil.TempFile("", "_chunkaligned_")
+	if err != nil {
+		err = fmt.Errorf("TempFile: %v", err)
+		return
+	}
+
+	rf, err := os.Open("/dev/urandom")
+	if err != nil {
+		err = fmt.Errorf("Open /dev/urandom: %v", err)
+		return
+	}
+	defer rf.Close()
+
+	_, err = io.CopyN(tf, rf, size)
+	if err != nil {
+		err = fmt.Errorf("Failed to write content: %v", err)
+		return
+	}
+
+	return tf, nil
+}
