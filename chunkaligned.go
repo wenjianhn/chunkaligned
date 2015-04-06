@@ -81,6 +81,8 @@ var fixedBytePool = sync.Pool{
 	New: func() interface{} { return make([]byte, chunkSizeLimit) },
 }
 
+// NOTE(wenjianhn): Clients of chunkReadAt cannot execute parallel
+// ReadAt calls on the same chunk, beacause there is no lock to guard the cache.
 type chunkReaderAt struct {
 	size  int
 	base  int64
