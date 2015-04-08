@@ -15,6 +15,38 @@ import (
 	"testing"
 )
 
+func TestNewChunkAlignedReaderAt(t *testing.T) {
+	s := "0123" + "4567" + "8"
+	sr := io.NewSectionReader(strings.NewReader(s), 0, int64(len(s)))
+	r, err := NewChunkAlignedReaderAt(sr, 4)
+	if err != nil {
+		t.Fatalf("NewChunkAlignedReaderAt: %v", err)
+	}
+
+	if r.Size() != int64(len(s)) {
+		t.Fatalf("Size() is %d, want %d", r.Size(), len(s))
+	}
+
+	buf := make([]byte, 9)
+	for i := 1; i < len(buf); i++ {
+		for off := 0; off < len(s); off++ {
+			if (i + off) > len(s) {
+				continue
+			}
+			readP := buf[:i]
+			_, err = r.ReadAt(readP, int64(off))
+			if err != nil {
+				t.Fatalf("r.ReadAt: %v", err)
+			}
+			if !reflect.DeepEqual(s[off:off+len(readP)], string(readP)) {
+				t.Errorf("Want %s, got %s", s[off:off+len(readP)], readP)
+			}
+		}
+	}
+
+	// TODO(wenjianhn): ReadAt with offset > multi.size
+}
+
 func TestIntergration(t *testing.T) {
 	tf, err := sizeTempFile(1 * 1024 * 1024)
 	if err != nil {

@@ -101,11 +101,10 @@ func (c *chunkReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 	wantN := len(p)
 
 	if len(c.cache) == 0 {
-		c.base = off
 		c.cache = fixedBytePool.Get().([]byte)
 
 		// the offset is aligned
-		readN, err := c.r.ReadAt(c.cache[:c.size], off)
+		readN, err := c.r.ReadAt(c.cache[:c.size], c.base)
 		if err != nil {
 			if err == io.EOF {
 				if readN < wantN {
@@ -170,6 +169,7 @@ func NewChunkAlignedReaderAt(r SizeReaderAt, chunkSize int) (SizeReaderAt, error
 		}
 		f := &chunkReaderAt{
 			size:  partSize,
+			base:  offset,
 			cache: nil,
 			r:     r,
 		}
