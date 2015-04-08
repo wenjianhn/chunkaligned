@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Most of the contribution goes to Brad Fitzpatrick.
+// See http://talks.golang.org/2013/oscon-dl.slide
+
 package chunkaligned
 
 import (
