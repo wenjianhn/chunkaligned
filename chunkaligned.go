@@ -34,6 +34,10 @@ type multi struct {
 func (m *multi) Size() int64 { return m.size }
 
 func (m *multi) ReadAt(p []byte, off int64) (n int, err error) {
+	if off < 0 || off >= m.size {
+		return 0, io.EOF
+	}
+
 	wantN := len(p)
 
 	// Skip past the requested offset.

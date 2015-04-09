@@ -44,7 +44,10 @@ func TestNewChunkAlignedReaderAt(t *testing.T) {
 		}
 	}
 
-	// TODO(wenjianhn): ReadAt with offset > multi.size
+	_, err = r.ReadAt(buf, int64(len(s)))
+	if err != io.EOF {
+		t.Fatalf("Want %v, got %v", io.EOF, err)
+	}
 }
 
 func TestIntergration(t *testing.T) {
