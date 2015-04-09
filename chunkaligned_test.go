@@ -69,6 +69,11 @@ func TestIntergration(t *testing.T) {
 	// testing with different combinations of chunkSize, bufSize and offset
 	for i := 0; i < 6; i++ {
 		chunkSize := 32 * 1024 * (1 << uint(i))
+		cara, err := NewChunkAlignedReaderAt(&fg, chunkSize)
+		if err != nil {
+			t.Errorf("NewChunkAlignedReaderAt: %v", err)
+			return
+		}
 		for j := 0; j < 4; j++ {
 			bufSize := 32 * 1024 * (1 << uint(j))
 			for k := 0; k < 100; k++ {
@@ -76,12 +81,6 @@ func TestIntergration(t *testing.T) {
 
 				t.Logf("chunkSize: %d, bufSize: %d, offset: %d",
 					chunkSize, bufSize, offset)
-
-				cara, err := NewChunkAlignedReaderAt(&fg, chunkSize)
-				if err != nil {
-					t.Errorf("NewChunkAlignedReaderAt: %v", err)
-					return
-				}
 
 				wantN := bufSize
 				if fg.Size()-offset < int64(bufSize) {
