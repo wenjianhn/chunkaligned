@@ -1,6 +1,6 @@
 # chunkaligned
 [![Build Status](https://travis-ci.org/wenjianhn/chunkaligned.png?branch=master)](https://travis-ci.org/wenjianhn/chunkaligned)
-[![Coverage Status](https://coveralls.io/repos/wenjianhn/chunkaligned/badge.svg)](https://coveralls.io/r/wenjianhn/chunkaligned)
+[![Coverage Status](https://coveralls.io/repos/wenjianhn/chunkaligned/badge.svg?branch=master)](https://coveralls.io/r/wenjianhn/chunkaligned?branch=master)
 
 ## Summary
 
