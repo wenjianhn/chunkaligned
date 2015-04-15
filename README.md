@@ -1,4 +1,5 @@
 # chunkaligned
+[![Build Status](https://travis-ci.org/wenjianhn/chunkaligned.png?branch=master)](https://travis-ci.org/wenjianhn/chunkaligned)
 
 ## Summary
 
